@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body class="bg-[#0b0e14] text-white font-sans antialiased select-none">
+
+    <div id="join-screen" class="hidden fixed inset-0 bg-[#0b0e14]/95 flex flex-col items-center justify-center p-6 text-center z-50">
+        <div class="bg-[#161a23] p-8 rounded-2xl border border-blue-500/20 max-w-sm w-full">
+            <h2 class="text-xl font-bold mb-2 text-blue-400">Channel Join Karein!</h2>
+            <p class="text-gray-400 text-sm mb-6">Aage badhne ke liye aapko hamare official Telegram channel ko join karna hoga.</p>
+            <button onclick="window.open('https://t.me/your_channel_username', '_blank')" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-medium mb-3 transition">Join Channel</button>
+            <button onclick="checkUserStatus()" class="w-full bg-[#202634] hover:bg-[#2a3244] py-3 rounded-xl font-medium transition text-gray-300">Maine Join Kar Liya</button>
+        </div>
+    </div>
+
+    <div id="dashboard" class="p-4 max-w-md mx-auto space-y-4 pb-10">
+        <div class="flex justify-between items-center bg-[#161a23] p-3 rounded-xl">
+            <span class="font-bold text-sm">👑 Royal Events</span>
+            <span class="bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full text-xs font-semibold">🟢 Live Pool</span>
+        </div>
+
+        <div class="bg-[#161a23] p-4 rounded-2xl border border-gray-800">
+            <p class="text-xs text-gray-400 uppercase tracking-wider">Weekly Pool</p>
+            <h3 class="text-2xl font-black mt-1 text-blue-400">3,480 <span class="text-xs font-normal text-white">TON</span></h3>
+            <div class="w-full bg-gray-800 h-2 rounded-full mt-3 overflow-hidden">
+                <div class="bg-blue-500 h-full w-[70%]"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-[#161a23] p-4 rounded-xl">
+                <p class="text-xs text-gray-400">Valid Referrals</p>
+                <p id="ref-count" class="text-xl font-bold text-green-400 mt-1">0</p>
+            </div>
+            <div class="bg-[#161a23] p-4 rounded-xl">
+                <p class="text-xs text-gray-400">Your Balance</p>
+                <p id="user-balance" class="text-xl font-bold text-blue-400 mt-1">0 TON</p>
+            </div>
+        </div>
+
+        <div class="bg-[#161a23] p-4 rounded-2xl space-y-3">
+            <h4 class="text-sm font-bold">Invite & Earn</h4>
+            <p class="text-xs text-gray-400">Har ek valid friend par 1 TON milega.</p>
+            <div class="flex gap-2">
+                <input id="ref-link" type="text" readonly class="bg-[#0b0e14] border border-gray-800 text-xs rounded-xl p-3 flex-1 text-gray-400 outline-none" value="Loading link...">
+                <button onclick="copyLink()" class="bg-blue-600 text-xs px-4 rounded-xl font-medium active:scale-95 transition">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const userId = tg.initDataUnsafe?.user?.id || 1234567; 
+
+        // Bot link configuration
+        document.getElementById('ref-link').value = `https://t.me/YourBotName?startapp=ref_${userId}`;
+
+        async function checkUserStatus() {
+            try {
+                const response = await fetch('/api/user-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
+                const resData = await response.json();
+
+                if (resData.isMember) {
+                    document.getElementById('join-screen').classList.add('hidden');
+                    document.getElementById('ref-count').innerText = resData.data.referrals;
+                    document.getElementById('user-balance').innerText = `${resData.data.balance} TON`;
+                } else {
+                    document.getElementById('join-screen').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("Error:", err);
+            }
+        }
+
+        function copyLink() {
+            const linkInput = document.getElementById('ref-link');
+            linkInput.select();
+            document.execCommand('copy');
+            alert('Referral link copy ho gaya!');
+        }
+
+        checkUserStatus();
+    </script>
+</body>
+</html>
